@@ -11,7 +11,7 @@ async function bootstrap() {
       options: {
         package: 'chat',
         protoPath: join(__dirname, '../src/proto/chat.proto'),
-        url: '0.0.0.0:8085',
+        url: `${process.env.SERVER_HOST}:${process.env.SERVER_PORT}`,
         keepalive: {
           keepaliveTimeMs: 5 * 60 * 1000,
           keepaliveTimeoutMs: 20 * 1000,

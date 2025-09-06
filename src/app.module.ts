@@ -4,6 +4,10 @@ import { AppService } from './app.service';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { join } from 'path';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
+import { Message, MessageSchema } from './schema/message.schem';
+import { Conversation, ConversationSchema } from './schema/conversation.schema';
+import { Image, ImageSchema } from './schema/image.schema';
 
 @Module({
   imports: [
@@ -29,6 +33,19 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         }),
         inject: [ConfigService],
       },
+    ]),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        uri: configService.get('MONGO_URI', 'mongodb://localhost:27017'),
+        dbName: configService.get('MONGO_DB') || 'chat_db',
+      }),
+      inject: [ConfigService],
+    }),
+    MongooseModule.forFeature([
+      { name: Message.name, schema: MessageSchema },
+      { name: Conversation.name, schema: ConversationSchema },
+      { name: Image.name, schema: ImageSchema },
     ]),
   ],
   controllers: [AppController],

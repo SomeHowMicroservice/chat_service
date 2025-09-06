@@ -2,6 +2,11 @@ import { Controller } from '@nestjs/common';
 import { AppService } from './app.service';
 import { GrpcMethod, RpcException } from '@nestjs/microservices';
 import { SendMessageRequest, SendMessageResponse } from './protobuf/chat/chat';
+import {
+  ResourceNotFoundException,
+  RunTimeException,
+} from './common/exceptions';
+import { status } from '@grpc/grpc-js';
 
 @Controller()
 export class AppController {
@@ -9,20 +14,7 @@ export class AppController {
 
   @GrpcMethod('ChatService', 'SendMessage')
   async sendMessage(request: SendMessageRequest): Promise<SendMessageResponse> {
-    try {
-      await this.appService.sendMessage(request.message);
-      return { ok: true };
-    } catch (err: any) {
-      if (err.code && err.details) {
-        throw new RpcException({
-          code: err.code,
-          message: err.details,
-        });
-      }
-      throw new RpcException({
-        code: 13,
-        message: 'Internal server error',
-      });
-    }
+    await this.appService.sendMessage(request.message);
+    return { ok: true };
   }
 }

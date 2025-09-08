@@ -5,7 +5,8 @@ import { join } from 'path';
 import { GrpcExceptionFilter } from './common/error_handler';
 
 async function bootstrap() {
-  const app = await NestFactory.createMicroservice<MicroserviceOptions>(
+  // Start GRPC microservice
+  const grpcMicroservice = await NestFactory.createMicroservice<MicroserviceOptions>(
     AppModule,
     {
       transport: Transport.GRPC,
@@ -21,9 +22,31 @@ async function bootstrap() {
           http2MinTimeBetweenPingsMs: 60 * 1000,
         },
       },
-    },
+    }
   );
-  app.useGlobalFilters(new GrpcExceptionFilter());
-  await app.listen();
+  grpcMicroservice.useGlobalFilters(new GrpcExceptionFilter());
+  await grpcMicroservice.listen();
+
+  const rmqMicroservice = await NestFactory.createMicroservice<MicroserviceOptions>(
+    AppModule,
+    {
+      transport: Transport.RMQ,
+      options: {
+        urls: [
+          `amqps://${process.env.RABBITMQ_USERNAME}:${process.env.RABBITMQ_PASSWORD}@${process.env.RABBITMQ_HOST}:${process.env.RABBITMQ_PORT}/${process.env.RABBITMQ_VHOST}`,
+        ],
+        queue: 'chat_queue',
+        queueOptions: {
+          durable: true,
+        },
+        prefetchCount: 5,
+        socketOptions: {
+          heartbeatIntervalInSeconds: 60,
+          reconnectTimeInSeconds: 5,
+        },
+      },
+    }
+  );
+  await rmqMicroservice.listen();
 }
 bootstrap();

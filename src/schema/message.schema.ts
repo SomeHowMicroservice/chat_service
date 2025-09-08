@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { Conversation } from './conversation.schema';
 
 @Schema({
   timestamps: { createdAt: true, updatedAt: false },

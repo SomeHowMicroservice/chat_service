@@ -5,9 +5,11 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { join } from 'path';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Message, MessageSchema } from './schema/message.schem';
+import { Message, MessageSchema } from './schema/message.schema';
 import { Conversation, ConversationSchema } from './schema/conversation.schema';
 import { Image, ImageSchema } from './schema/image.schema';
+import { ConversationRepository } from './repository/conversation.repository';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -47,8 +49,9 @@ import { Image, ImageSchema } from './schema/image.schema';
       { name: Conversation.name, schema: ConversationSchema },
       { name: Image.name, schema: ImageSchema },
     ]),
+    CloudinaryModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, ConversationRepository],
 })
 export class AppModule {}

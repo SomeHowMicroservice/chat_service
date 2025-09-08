@@ -12,32 +12,75 @@ import { Observable } from "rxjs";
 
 export const protobufPackage = "chat";
 
-export interface SendMessageRequest {
-  message: string;
+export interface CreateMessageRequest {
+  conversationId: string;
+  senderId: string;
+  senderRole: string;
+  content?: string | undefined;
+  base64Data?: string | undefined;
 }
 
-export interface SendMessageResponse {
-  ok: boolean;
+export interface CreateConversationRequest {
+  userId: string;
+}
+
+export interface GetByUserIdRequest {
+  userId: string;
+}
+
+export interface SimpleImageResponse {
+  id: string;
+  url: string;
+}
+
+export interface MessageResponse {
+  id: string;
+  senderId: string;
+  senderRole: string;
+  content?: string | undefined;
+  image?: SimpleImageResponse | undefined;
+  isRead?: boolean | undefined;
+  readAt?: string | undefined;
+  createdAt: string;
+}
+
+export interface ConversationResponse {
+  id: string;
+  customerId: string;
+  staffIds: string[];
+  messages: MessageResponse[];
 }
 
 export const CHAT_PACKAGE_NAME = "chat";
 
-function createBaseSendMessageRequest(): SendMessageRequest {
-  return { message: "" };
+function createBaseCreateMessageRequest(): CreateMessageRequest {
+  return { conversationId: "", senderId: "", senderRole: "" };
 }
 
-export const SendMessageRequest: MessageFns<SendMessageRequest> = {
-  encode(message: SendMessageRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.message !== "") {
-      writer.uint32(10).string(message.message);
+export const CreateMessageRequest: MessageFns<CreateMessageRequest> = {
+  encode(message: CreateMessageRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.conversationId !== "") {
+      writer.uint32(10).string(message.conversationId);
+    }
+    if (message.senderId !== "") {
+      writer.uint32(18).string(message.senderId);
+    }
+    if (message.senderRole !== "") {
+      writer.uint32(26).string(message.senderRole);
+    }
+    if (message.content !== undefined) {
+      writer.uint32(34).string(message.content);
+    }
+    if (message.base64Data !== undefined) {
+      writer.uint32(42).string(message.base64Data);
     }
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): SendMessageRequest {
+  decode(input: BinaryReader | Uint8Array, length?: number): CreateMessageRequest {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseSendMessageRequest();
+    const message = createBaseCreateMessageRequest();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -46,7 +89,39 @@ export const SendMessageRequest: MessageFns<SendMessageRequest> = {
             break;
           }
 
-          message.message = reader.string();
+          message.conversationId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.senderId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.senderRole = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.content = reader.string();
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.base64Data = reader.string();
           continue;
         }
       }
@@ -59,31 +134,300 @@ export const SendMessageRequest: MessageFns<SendMessageRequest> = {
   },
 };
 
-function createBaseSendMessageResponse(): SendMessageResponse {
-  return { ok: false };
+function createBaseCreateConversationRequest(): CreateConversationRequest {
+  return { userId: "" };
 }
 
-export const SendMessageResponse: MessageFns<SendMessageResponse> = {
-  encode(message: SendMessageResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.ok !== false) {
-      writer.uint32(8).bool(message.ok);
+export const CreateConversationRequest: MessageFns<CreateConversationRequest> = {
+  encode(message: CreateConversationRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.userId !== "") {
+      writer.uint32(10).string(message.userId);
     }
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): SendMessageResponse {
+  decode(input: BinaryReader | Uint8Array, length?: number): CreateConversationRequest {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseSendMessageResponse();
+    const message = createBaseCreateConversationRequest();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1: {
-          if (tag !== 8) {
+          if (tag !== 10) {
             break;
           }
 
-          message.ok = reader.bool();
+          message.userId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
+function createBaseGetByUserIdRequest(): GetByUserIdRequest {
+  return { userId: "" };
+}
+
+export const GetByUserIdRequest: MessageFns<GetByUserIdRequest> = {
+  encode(message: GetByUserIdRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.userId !== "") {
+      writer.uint32(10).string(message.userId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): GetByUserIdRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseGetByUserIdRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.userId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
+function createBaseSimpleImageResponse(): SimpleImageResponse {
+  return { id: "", url: "" };
+}
+
+export const SimpleImageResponse: MessageFns<SimpleImageResponse> = {
+  encode(message: SimpleImageResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.id !== "") {
+      writer.uint32(10).string(message.id);
+    }
+    if (message.url !== "") {
+      writer.uint32(18).string(message.url);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): SimpleImageResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseSimpleImageResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.id = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.url = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
+function createBaseMessageResponse(): MessageResponse {
+  return { id: "", senderId: "", senderRole: "", createdAt: "" };
+}
+
+export const MessageResponse: MessageFns<MessageResponse> = {
+  encode(message: MessageResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.id !== "") {
+      writer.uint32(10).string(message.id);
+    }
+    if (message.senderId !== "") {
+      writer.uint32(18).string(message.senderId);
+    }
+    if (message.senderRole !== "") {
+      writer.uint32(26).string(message.senderRole);
+    }
+    if (message.content !== undefined) {
+      writer.uint32(34).string(message.content);
+    }
+    if (message.image !== undefined) {
+      SimpleImageResponse.encode(message.image, writer.uint32(42).fork()).join();
+    }
+    if (message.isRead !== undefined) {
+      writer.uint32(48).bool(message.isRead);
+    }
+    if (message.readAt !== undefined) {
+      writer.uint32(58).string(message.readAt);
+    }
+    if (message.createdAt !== "") {
+      writer.uint32(66).string(message.createdAt);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): MessageResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseMessageResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.id = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.senderId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.senderRole = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.content = reader.string();
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.image = SimpleImageResponse.decode(reader, reader.uint32());
+          continue;
+        }
+        case 6: {
+          if (tag !== 48) {
+            break;
+          }
+
+          message.isRead = reader.bool();
+          continue;
+        }
+        case 7: {
+          if (tag !== 58) {
+            break;
+          }
+
+          message.readAt = reader.string();
+          continue;
+        }
+        case 8: {
+          if (tag !== 66) {
+            break;
+          }
+
+          message.createdAt = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
+function createBaseConversationResponse(): ConversationResponse {
+  return { id: "", customerId: "", staffIds: [], messages: [] };
+}
+
+export const ConversationResponse: MessageFns<ConversationResponse> = {
+  encode(message: ConversationResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.id !== "") {
+      writer.uint32(10).string(message.id);
+    }
+    if (message.customerId !== "") {
+      writer.uint32(18).string(message.customerId);
+    }
+    for (const v of message.staffIds) {
+      writer.uint32(26).string(v!);
+    }
+    for (const v of message.messages) {
+      MessageResponse.encode(v!, writer.uint32(34).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ConversationResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseConversationResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.id = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.customerId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.staffIds.push(reader.string());
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.messages.push(MessageResponse.decode(reader, reader.uint32()));
           continue;
         }
       }
@@ -97,18 +441,24 @@ export const SendMessageResponse: MessageFns<SendMessageResponse> = {
 };
 
 export interface ChatServiceClient {
-  sendMessage(request: SendMessageRequest): Observable<SendMessageResponse>;
+  getConversationByUserId(request: GetByUserIdRequest): Observable<ConversationResponse>;
+
+  createMessage(request: CreateMessageRequest): Observable<MessageResponse>;
 }
 
 export interface ChatServiceController {
-  sendMessage(
-    request: SendMessageRequest,
-  ): Promise<SendMessageResponse> | Observable<SendMessageResponse> | SendMessageResponse;
+  getConversationByUserId(
+    request: GetByUserIdRequest,
+  ): Promise<ConversationResponse> | Observable<ConversationResponse> | ConversationResponse;
+
+  createMessage(
+    request: CreateMessageRequest,
+  ): Promise<MessageResponse> | Observable<MessageResponse> | MessageResponse;
 }
 
 export function ChatServiceControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ["sendMessage"];
+    const grpcMethods: string[] = ["getConversationByUserId", "createMessage"];
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
       GrpcMethod("ChatService", method)(constructor.prototype[method], method, descriptor);
@@ -125,19 +475,30 @@ export const CHAT_SERVICE_NAME = "ChatService";
 
 export type ChatServiceService = typeof ChatServiceService;
 export const ChatServiceService = {
-  sendMessage: {
-    path: "/chat.ChatService/SendMessage",
+  getConversationByUserId: {
+    path: "/chat.ChatService/GetConversationByUserId",
     requestStream: false,
     responseStream: false,
-    requestSerialize: (value: SendMessageRequest): Buffer => Buffer.from(SendMessageRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer): SendMessageRequest => SendMessageRequest.decode(value),
-    responseSerialize: (value: SendMessageResponse): Buffer => Buffer.from(SendMessageResponse.encode(value).finish()),
-    responseDeserialize: (value: Buffer): SendMessageResponse => SendMessageResponse.decode(value),
+    requestSerialize: (value: GetByUserIdRequest): Buffer => Buffer.from(GetByUserIdRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): GetByUserIdRequest => GetByUserIdRequest.decode(value),
+    responseSerialize: (value: ConversationResponse): Buffer =>
+      Buffer.from(ConversationResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): ConversationResponse => ConversationResponse.decode(value),
+  },
+  createMessage: {
+    path: "/chat.ChatService/CreateMessage",
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: CreateMessageRequest): Buffer => Buffer.from(CreateMessageRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): CreateMessageRequest => CreateMessageRequest.decode(value),
+    responseSerialize: (value: MessageResponse): Buffer => Buffer.from(MessageResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): MessageResponse => MessageResponse.decode(value),
   },
 } as const;
 
 export interface ChatServiceServer extends UntypedServiceImplementation {
-  sendMessage: handleUnaryCall<SendMessageRequest, SendMessageResponse>;
+  getConversationByUserId: handleUnaryCall<GetByUserIdRequest, ConversationResponse>;
+  createMessage: handleUnaryCall<CreateMessageRequest, MessageResponse>;
 }
 
 export interface MessageFns<T> {

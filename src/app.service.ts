@@ -1,35 +1,46 @@
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  OnModuleInit,
-} from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ClientGrpc } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
 import { UserServiceClient } from './protobuf/user/user';
-import { InjectModel } from '@nestjs/mongoose';
-import { Message } from './schema/message.schem';
-import { Model } from 'mongoose';
-import { Image } from './schema/image.schema';
-import { RunTimeException } from './common/exceptions';
+import { ConversationRepository } from './repository/conversation.repository';
+import {
+  RunTimeException,
+} from './common/exceptions';
+import { Conversation } from './schema/conversation.schema';
 
 @Injectable()
 export class AppService implements OnModuleInit {
-  private userService: UserServiceClient;
+  private userClient: UserServiceClient;
   constructor(
     @Inject('USER_PACKAGE') private readonly client: ClientGrpc,
-    @InjectModel(Message.name) private readonly messageModel: Model<Message>,
-    @InjectModel(Image.name) private readonly imageModel: Model<Image>,
+    private readonly conversationRepository: ConversationRepository,
   ) {}
 
   onModuleInit() {
-    this.userService = this.client.getService<UserServiceClient>('UserService');
+    this.userClient = this.client.getService<UserServiceClient>('UserService');
   }
 
-  async sendMessage(message: string): Promise<void> {
-    const res = await lastValueFrom(
-      this.userService.getUserById({ id: '2f5bdaa1-619e-4ce3-b38d-17b77d53de48' }),
-    );
-    console.log(res);
+  async getConversationByUserId(userId: string): Promise<Conversation> {
+    let conversation = await this.conversationRepository
+      .findByCustomerId(userId)
+      .catch((err) => {
+        throw new RunTimeException(
+          `lấy thông tin cuộc trò chuyện thất bại: ${err.message}`,
+        );
+      });
+    if (!conversation) {
+      const newConversation: Partial<Conversation> = {
+        customerId: userId,
+      };
+      conversation = await this.conversationRepository
+        .create(newConversation)
+        .catch((err) => {
+          throw new RunTimeException(
+            `tạo cuộc trò chuyện mới thất bại: ${err.message}`,
+          );
+        });
+    }
+
+    return conversation;
   }
 }

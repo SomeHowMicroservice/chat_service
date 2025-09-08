@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { Message } from './message.schem';
+
+export type ConversationDocument = Conversation & Document;
 
 @Schema({ timestamps: true, collection: 'conversation' })
 export class Conversation extends Document {
@@ -28,4 +29,14 @@ export class Conversation extends Document {
 
 export const ConversationSchema = SchemaFactory.createForClass(Conversation);
 
-ConversationSchema.index({ updatedAt: -1, customerId: 1 });
+ConversationSchema.index({ updatedAt: -1 });
+ConversationSchema.index({ customerId: 1 }, { unique: true });
+
+ConversationSchema.virtual('messages', {
+  ref: 'Message',
+  localField: '_id',
+  foreignField: 'conversation',
+});
+
+ConversationSchema.set('toJSON', { virtuals: true });
+ConversationSchema.set('toObject', { virtuals: true });

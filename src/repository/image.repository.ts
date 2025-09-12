@@ -1,6 +1,7 @@
 import { InjectConnection } from '@nestjs/mongoose';
 import { Image, ImageDocument } from '../schema/image.schema';
-import { Model } from 'mongoose';
+import { Model, UpdateQuery } from 'mongoose';
+import { ResourceNotFoundException } from 'src/common/exceptions';
 
 export class ImageRepository {
   constructor(
@@ -8,7 +9,17 @@ export class ImageRepository {
     private readonly imageModel: Model<ImageDocument>,
   ) {}
 
-  async create(image: Partial<Image>): Promise<void> {
-    await this.imageModel.create(image);
+  async create(image: Partial<Image>): Promise<Image> {
+    return await this.imageModel.create(image);
+  }
+
+  async update(id: string, updateData: UpdateQuery<Image>): Promise<void> {
+    const result = await this.imageModel.findByIdAndUpdate(id, updateData, {
+      runValidators: true,
+    });
+
+    if (!result) {
+      throw new ResourceNotFoundException('Không tìm thấy hình ảnh');
+    }
   }
 }

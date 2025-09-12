@@ -9,7 +9,7 @@ export class Image extends Document {
   url?: string;
 
   @Prop({ type: String, trim: true })
-  fileId?: string;
+  publicId?: string;
 }
 
 export const ImageSchema = SchemaFactory.createForClass(Image);

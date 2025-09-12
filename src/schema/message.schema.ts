@@ -1,6 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 
+export type MessageDocument = Message & Document;
+
 @Schema({
   timestamps: { createdAt: true, updatedAt: false },
   collection: 'message',

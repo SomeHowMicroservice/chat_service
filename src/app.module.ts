@@ -25,7 +25,7 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
           options: {
             package: 'user',
             protoPath: join(__dirname, '../src/proto/user.proto'),
-            url: `${configService.get('SERVER_HOST', 'localhost')}:${configService.get('USER_SERVICE_PORT', 8082)}`,
+            url: `${configService.get<string>('SERVER_HOST', 'localhost')}:${configService.get<number>('USER_SERVICE_PORT', 8082)}`,
             keepalive: {
               keepaliveTimeMs: 5 * 60 * 1000,
               keepaliveTimeoutMs: 10 * 1000,
@@ -39,8 +39,11 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
-        uri: configService.get('MONGO_URI', 'mongodb://localhost:27017'),
-        dbName: configService.get('MONGO_DB') || 'chat_db',
+        uri: configService.get<string>(
+          'MONGO_URI',
+          'mongodb://localhost:27017',
+        ),
+        dbName: configService.get<string>('MONGO_DB') || 'chat_db',
       }),
       inject: [ConfigService],
     }),

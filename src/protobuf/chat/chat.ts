@@ -17,7 +17,7 @@ export interface CreateMessageRequest {
   senderId: string;
   senderRole: string;
   content?: string | undefined;
-  base64Data?: string | undefined;
+  fileData?: Uint8Array | undefined;
 }
 
 export interface CreateConversationRequest {
@@ -28,17 +28,12 @@ export interface GetByUserIdRequest {
   userId: string;
 }
 
-export interface SimpleImageResponse {
-  id: string;
-  url: string;
-}
-
 export interface MessageResponse {
   id: string;
   senderId: string;
   senderRole: string;
   content?: string | undefined;
-  image?: SimpleImageResponse | undefined;
+  imageUrl?: string | undefined;
   isRead?: boolean | undefined;
   readAt?: string | undefined;
   createdAt: string;
@@ -71,8 +66,8 @@ export const CreateMessageRequest: MessageFns<CreateMessageRequest> = {
     if (message.content !== undefined) {
       writer.uint32(34).string(message.content);
     }
-    if (message.base64Data !== undefined) {
-      writer.uint32(42).string(message.base64Data);
+    if (message.fileData !== undefined) {
+      writer.uint32(42).bytes(message.fileData);
     }
     return writer;
   },
@@ -121,7 +116,7 @@ export const CreateMessageRequest: MessageFns<CreateMessageRequest> = {
             break;
           }
 
-          message.base64Data = reader.string();
+          message.fileData = reader.bytes();
           continue;
         }
       }
@@ -208,54 +203,6 @@ export const GetByUserIdRequest: MessageFns<GetByUserIdRequest> = {
   },
 };
 
-function createBaseSimpleImageResponse(): SimpleImageResponse {
-  return { id: "", url: "" };
-}
-
-export const SimpleImageResponse: MessageFns<SimpleImageResponse> = {
-  encode(message: SimpleImageResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.id !== "") {
-      writer.uint32(10).string(message.id);
-    }
-    if (message.url !== "") {
-      writer.uint32(18).string(message.url);
-    }
-    return writer;
-  },
-
-  decode(input: BinaryReader | Uint8Array, length?: number): SimpleImageResponse {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseSimpleImageResponse();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 10) {
-            break;
-          }
-
-          message.id = reader.string();
-          continue;
-        }
-        case 2: {
-          if (tag !== 18) {
-            break;
-          }
-
-          message.url = reader.string();
-          continue;
-        }
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
-};
-
 function createBaseMessageResponse(): MessageResponse {
   return { id: "", senderId: "", senderRole: "", createdAt: "" };
 }
@@ -274,8 +221,8 @@ export const MessageResponse: MessageFns<MessageResponse> = {
     if (message.content !== undefined) {
       writer.uint32(34).string(message.content);
     }
-    if (message.image !== undefined) {
-      SimpleImageResponse.encode(message.image, writer.uint32(42).fork()).join();
+    if (message.imageUrl !== undefined) {
+      writer.uint32(42).string(message.imageUrl);
     }
     if (message.isRead !== undefined) {
       writer.uint32(48).bool(message.isRead);
@@ -333,7 +280,7 @@ export const MessageResponse: MessageFns<MessageResponse> = {
             break;
           }
 
-          message.image = SimpleImageResponse.decode(reader, reader.uint32());
+          message.imageUrl = reader.string();
           continue;
         }
         case 6: {

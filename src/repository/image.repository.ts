@@ -1,11 +1,11 @@
-import { InjectConnection } from '@nestjs/mongoose';
+import { InjectModel } from '@nestjs/mongoose';
 import { Image, ImageDocument } from '../schema/image.schema';
 import { Model, UpdateQuery } from 'mongoose';
 import { ResourceNotFoundException } from 'src/common/exceptions';
 
 export class ImageRepository {
   constructor(
-    @InjectConnection(Image.name)
+    @InjectModel(Image.name)
     private readonly imageModel: Model<ImageDocument>,
   ) {}
 

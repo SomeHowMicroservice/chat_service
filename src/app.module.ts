@@ -10,6 +10,8 @@ import { Conversation, ConversationSchema } from './schema/conversation.schema';
 import { Image, ImageSchema } from './schema/image.schema';
 import { ConversationRepository } from './repository/conversation.repository';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { MessageRepository } from './repository/message.repository';
+import { ImageRepository } from './repository/image.repository';
 
 @Module({
   imports: [
@@ -55,6 +57,6 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
     CloudinaryModule,
   ],
   controllers: [AppController],
-  providers: [AppService, ConversationRepository],
+  providers: [AppService, ConversationRepository, MessageRepository, ImageRepository],
 })
 export class AppModule {}
